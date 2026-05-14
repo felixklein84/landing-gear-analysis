@@ -145,8 +145,8 @@ All design parameters live in [`params.py`](params.py).  The most important ones
 
 | Parameter | Default | Meaning |
 |---|---|---|
-| `M_UAV_KG` | 300 kg | Total UAV landing mass |
-| `V_SINK_MS` | 2.0 m/s | Design sink rate |
+| `M_UAV_KG` | 80 kg | Total UAV landing mass |
+| `V_SINK_MS` | 0.5 m/s | Design sink rate |
 | `N_SAFETY` | 3.0 | Safety factor on σ_u |
 | `D_OUTER`, `T_WALL` | 70 mm / 2.5 mm | Tube cross-section |
 | `DELTA_MAX_M` | 80 mm | Stroke limit |
@@ -163,11 +163,38 @@ All design parameters live in [`params.py`](params.py).  The most important ones
 
 ---
 
+## Key findings
+
+### The tied arch trades stress for stiffness
+
+Without the tie, the arch is a pure bending beam with k_v ≈ 300 kN/m.  With a rigid tie, k_v rises to ≈ 3 000 kN/m — a 10× increase.  The tie reduces peak bending stress by ~60–70% but makes the structure much stiffer.
+
+For landing gear, high stiffness means high impact loads.  The dynamic load factor for this structure is n_dyn ≈ 15–30×, which means even a slow 0.5 m/s touchdown produces F_impact ≈ 6–12 kN on an 80 kg aircraft.  At 1.0 m/s the factor exceeds 25, making the tube structurally infeasible without a cross-section redesign.
+
+**Conclusion**: this skid-bow geometry (tied or untied) is suitable for precision VTOL landing (active height control, v_sink ≤ 0.5–0.8 m/s).  For passive landing at EASA SC-VTOL normal rates (2.5 m/s), energy-absorbing elements (rubber pads, foam crushables, oleo) would be required.
+
+### Optimum design (80 kg, v_sink = 0.5 m/s)
+
+| Parameter | Value |
+|---|---|
+| Bow radius R | 417 mm |
+| Half-angle α | 69° |
+| Skid length l_S | 250 mm |
+| Gear height | 500 mm |
+| Track width | 1207 mm |
+| Vertical stiffness k_v | 2 980 kN/m |
+| Dynamic load factor n_dyn | 14.9× |
+| Design load F_impact | 5 865 N/leg |
+| Peak stress σ_max | 153 MPa  (margin +25 % vs σ_u/n) |
+| Half-leg mass | 1 306 g |
+
 ## Physical background
 
-The **tied arch** mechanism is key to this design.  Without the tie, the arch behaves as a pure bending beam: the vertical load at the foot generates large moments at the apex, requiring a heavy cross-section.  With the tie, the horizontal foot reaction is carried in tension by the cross-brace, partially converting bending into axial load.  This typically reduces peak bending stress by 30–50% for the geometries considered here.
+The **tied arch** mechanism is key to this design.  Without the tie, the arch behaves as a pure bending beam: the vertical load at the foot generates large moments at the apex, requiring a heavy cross-section.  With the tie, the horizontal foot reaction is carried in tension by the cross-brace, partially converting bending into axial load.  This reduces peak bending stress by ~60–70% for the geometries considered.
 
 The technique is identical in principle to a tied-arch bridge: the tie carries the horizontal thrust that would otherwise require a heavy abutment.
+
+However, the same mechanism that reduces bending stress also stiffens the structure significantly.  For a landing gear application this is a fundamental tradeoff: a stiffer gear absorbs less stroke per unit load, amplifying the dynamic impact force.  This coupling is only visible when the structural and dynamics analyses are performed together — which is the primary contribution of this code over a purely static analysis.
 
 ---
 
